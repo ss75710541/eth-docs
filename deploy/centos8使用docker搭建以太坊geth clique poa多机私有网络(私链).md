@@ -412,7 +412,7 @@ docker run -d --name ethereum-node \
            --syncmode 'full' --allow-insecure-unlock --rpc.allow-unprotected-txs  --gcmode=archive \
            --unlock  ${initAccount} --password /root/.ethereum/password.txt --miner.etherbase ${initAccount} --mine \
            --nodiscover
-``` 
+```
 
 重新启动节点
 
@@ -432,5 +432,5 @@ sh run.sh
 ## 参考
 
 http://blog.hubwiz.com/2019/02/28/ethereum-POA-setup/
-    
+
 https://geth.ethereum.org/docs/interface/private-network

@@ -8,7 +8,7 @@
 
 创建 init.sh
 
-```
+```shell
 #!/bin/bash
 set -e
 cd $(dirname $0)
@@ -105,7 +105,7 @@ initGenesis
 
 执行初始化
 
-```
+```shell
 sh init.sh
 ```
 
@@ -113,7 +113,7 @@ sh init.sh
 
 创建 run.sh
 
-```
+```shell
 #!/bin/bash
 
 cd $(dirname $0)
@@ -135,7 +135,7 @@ docker run -d --name ethereum-node \
 
 ## 测试交易
 
-```
+```shell
 docker run -it --rm \
            ethereum/client-go:v1.10.11 \
            attach http://172.17.16.174:8545
@@ -150,13 +150,13 @@ docker run -it --rm \
 > eth.sendTransaction({from: acc0, to: acc1, value: amount, gas: 300000, gasPrice: 300000})
 "0x2585bd04573256138fac59c8c90f2073ec84d807b5c64e589cc52bf132b3c985"
 ```
-  
+
 ## 参考：
-  
+
   https://geth.ethereum.org/docs/interface/private-network
-  
+
   http://blog.hubwiz.com/2019/02/28/ethereum-POA-setup/
-  
+
   https://www.daimajiaoliu.com/daima/4ed53f9eb10040c
-  
+
   https://github.com/ethereum/go-ethereum/blob/master/consensus/clique/clique.go

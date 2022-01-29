@@ -2,7 +2,7 @@
 
 ## 下载 blockscout 代码
 
-```
+```shell
 yum install -y git
 git clone https://github.com/blockscout/blockscout.git
 ```
