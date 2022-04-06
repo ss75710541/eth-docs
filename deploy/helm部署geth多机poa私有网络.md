@@ -1,5 +1,15 @@
 # helm部署geth多机poa私有网络
 
+## 主机规划
+
+| 主机名            | label标签 | taint污点 |
+| ----------------- | --------- | --------- |
+| node7.pldtest.k8s |           |           |
+| node8.pldtest.k8s |           |           |
+| node9.pldtest.k8s |           |           |
+
+
+
 ## 下载geth helm chart 
 
 ```sh
@@ -33,6 +43,9 @@ rm -rf /data/geth
 key=`cat account1.txt`
 account="`jq -r '.address' account1.txt`"
 password=`cat password1.txt`
+chainid=65534
+cluster=test
+
 cat > test1-values.yaml <<EOF
 # Default values for geth.
 # This is a YAML-formatted file.
@@ -151,10 +164,14 @@ autoscaling:
   # targetMemoryUtilizationPercentage: 80
 
 resources: {}
-cluster: test
+cluster: ${cluster}
 nodeSelector:
-  geth/cluster: test
-tolerations: []
+  geth/role: node
+tolerations:
+- key: "geth/cluster"
+  value: "${cluster}"
+  operator: "Equal"
+  effect: "NoSchedule"
 affinity:
   podAntiAffinity:
     requiredDuringSchedulingIgnoredDuringExecution:
@@ -163,12 +180,12 @@ affinity:
           - key: "geth/cluster"
             operator: In
             values:
-            - "test"
+            - "${cluster}"
         topologyKey: "kubernetes.io/hostname"
 
 config: |
   [Eth]
-  NetworkId = 65544
+  NetworkId = ${chainid}
   SyncMode = "full"
 
   [Node]
@@ -182,7 +199,7 @@ config: |
   StaticNodes = []
   TrustedNodes = []
 
-genesis: '{"config":{"chainId":65534,"homesteadBlock":0,"eip150Block":0,"eip150Hash":"0x0000000000000000000000000000000000000000000000000000000000000000","eip155Block":0,"eip158Block":0,"byzantiumBlock":0,"constantinopleBlock":0,"petersburgBlock":0,"istanbulBlock":0,"clique":{"period":5,"epoch":30000}},"extradata":"0x0000000000000000000000000000000000000000000000000000000000000000${account}0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","gasLimit":"8000000","coinbase":"0x0000000000000000000000000000000000000000","difficulty":"0x1","mixHash":"0x0000000000000000000000000000000000000000000000000000000000000000","alloc":{"0000000000000000000000000000000000000000":{"balance":"0x1"},"${account}":{"balance":"0x200000000000000000000000000000000000000000000000000000000000000"}},"nonce":"0x0000000000000123","number":"0x0","gasUsed":"0x0","parentHash":"0x0000000000000000000000000000000000000000000000000000000000000000","baseFeePerGas":null}'
+genesis: '{"config":{"chainId":${chainid},"homesteadBlock":0,"eip150Block":0,"eip150Hash":"0x0000000000000000000000000000000000000000000000000000000000000000","eip155Block":0,"eip158Block":0,"byzantiumBlock":0,"constantinopleBlock":0,"petersburgBlock":0,"istanbulBlock":0,"clique":{"period":5,"epoch":30000}},"extradata":"0x0000000000000000000000000000000000000000000000000000000000000000${account}0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","gasLimit":"8000000","coinbase":"0x0000000000000000000000000000000000000000","difficulty":"0x1","mixHash":"0x0000000000000000000000000000000000000000000000000000000000000000","alloc":{"0000000000000000000000000000000000000000":{"balance":"0x1"},"${account}":{"balance":"0x200000000000000000000000000000000000000000000000000000000000000"}},"nonce":"0x0000000000000123","number":"0x0","gasUsed":"0x0","parentHash":"0x0000000000000000000000000000000000000000000000000000000000000000","baseFeePerGas":null}'
 key: '${key}'
 password: "${password}"
 
@@ -235,6 +252,9 @@ key=`cat account2.txt`
 account1="`jq -r '.address' account1.txt`"
 account="`jq -r '.address' account2.txt`"
 password=`cat password2.txt`
+chainid=65534
+cluster=test
+
 cat > test2-values.yaml <<EOF
 # Default values for geth.
 # This is a YAML-formatted file.
@@ -353,10 +373,14 @@ autoscaling:
   # targetMemoryUtilizationPercentage: 80
 
 resources: {}
-cluster: test
+cluster: ${cluster}
 nodeSelector:
-  geth/cluster: test
-tolerations: []
+  geth/role: node
+tolerations:
+- key: "geth/cluster"
+  value: "${cluster}"
+  operator: "Equal"
+  effect: "NoSchedule"
 affinity:
   podAntiAffinity:
     requiredDuringSchedulingIgnoredDuringExecution:
@@ -365,12 +389,12 @@ affinity:
           - key: "geth/cluster"
             operator: In
             values:
-            - "test"
+            - "${cluster}"
         topologyKey: "kubernetes.io/hostname"
 
 config: |
   [Eth]
-  NetworkId = 65544
+  NetworkId = ${chainid}
   SyncMode = "full"
 
   [Node]
@@ -384,7 +408,7 @@ config: |
   StaticNodes = [${enode1}]
   TrustedNodes = [${enode1}]
 
-genesis: '{"config":{"chainId":65534,"homesteadBlock":0,"eip150Block":0,"eip150Hash":"0x0000000000000000000000000000000000000000000000000000000000000000","eip155Block":0,"eip158Block":0,"byzantiumBlock":0,"constantinopleBlock":0,"petersburgBlock":0,"istanbulBlock":0,"clique":{"period":5,"epoch":30000}},"extradata":"0x0000000000000000000000000000000000000000000000000000000000000000${account1}0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","gasLimit":"8000000","coinbase":"0x0000000000000000000000000000000000000000","difficulty":"0x1","mixHash":"0x0000000000000000000000000000000000000000000000000000000000000000","alloc":{"0000000000000000000000000000000000000000":{"balance":"0x1"},"${account1}":{"balance":"0x200000000000000000000000000000000000000000000000000000000000000"}},"nonce":"0x0000000000000123","number":"0x0","gasUsed":"0x0","parentHash":"0x0000000000000000000000000000000000000000000000000000000000000000","baseFeePerGas":null}'
+genesis: '{"config":{"chainId":${chainid},"homesteadBlock":0,"eip150Block":0,"eip150Hash":"0x0000000000000000000000000000000000000000000000000000000000000000","eip155Block":0,"eip158Block":0,"byzantiumBlock":0,"constantinopleBlock":0,"petersburgBlock":0,"istanbulBlock":0,"clique":{"period":5,"epoch":30000}},"extradata":"0x0000000000000000000000000000000000000000000000000000000000000000${account1}0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","gasLimit":"8000000","coinbase":"0x0000000000000000000000000000000000000000","difficulty":"0x1","mixHash":"0x0000000000000000000000000000000000000000000000000000000000000000","alloc":{"0000000000000000000000000000000000000000":{"balance":"0x1"},"${account1}":{"balance":"0x200000000000000000000000000000000000000000000000000000000000000"}},"nonce":"0x0000000000000123","number":"0x0","gasUsed":"0x0","parentHash":"0x0000000000000000000000000000000000000000000000000000000000000000","baseFeePerGas":null}'
 key: '${key}'
 password: "${password}"
 
@@ -467,6 +491,9 @@ key=`cat account3.txt`
 account1="`jq -r '.address' account1.txt`"
 account="`jq -r '.address' account3.txt`"
 password=`cat password3.txt`
+chainid=65534
+cluster=test
+
 cat > test3-values.yaml <<EOF
 # Default values for geth.
 # This is a YAML-formatted file.
@@ -585,10 +612,14 @@ autoscaling:
   # targetMemoryUtilizationPercentage: 80
 
 resources: {}
-cluster: test
+cluster: ${cluster}
 nodeSelector:
-  geth/cluster: test
-tolerations: []
+  geth/role: node
+tolerations:
+- key: "geth/cluster"
+  value: "${cluster}"
+  operator: "Equal"
+  effect: "NoSchedule"
 affinity:
   podAntiAffinity:
     requiredDuringSchedulingIgnoredDuringExecution:
@@ -597,12 +628,12 @@ affinity:
           - key: "geth/cluster"
             operator: In
             values:
-            - "test"
+            - "${cluster}"
         topologyKey: "kubernetes.io/hostname"
 
 config: |
   [Eth]
-  NetworkId = 65544
+  NetworkId = ${chainid}
   SyncMode = "full"
 
   [Node]
@@ -616,7 +647,7 @@ config: |
   StaticNodes = [${enode1},${enode2}]
   TrustedNodes = [${enode1},${enode2}]
 
-genesis: '{"config":{"chainId":65534,"homesteadBlock":0,"eip150Block":0,"eip150Hash":"0x0000000000000000000000000000000000000000000000000000000000000000","eip155Block":0,"eip158Block":0,"byzantiumBlock":0,"constantinopleBlock":0,"petersburgBlock":0,"istanbulBlock":0,"clique":{"period":5,"epoch":30000}},"extradata":"0x0000000000000000000000000000000000000000000000000000000000000000${account1}0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","gasLimit":"8000000","coinbase":"0x0000000000000000000000000000000000000000","difficulty":"0x1","mixHash":"0x0000000000000000000000000000000000000000000000000000000000000000","alloc":{"0000000000000000000000000000000000000000":{"balance":"0x1"},"${account1}":{"balance":"0x200000000000000000000000000000000000000000000000000000000000000"}},"nonce":"0x0000000000000123","number":"0x0","gasUsed":"0x0","parentHash":"0x0000000000000000000000000000000000000000000000000000000000000000","baseFeePerGas":null}'
+genesis: '{"config":{"chainId":${chainid},"homesteadBlock":0,"eip150Block":0,"eip150Hash":"0x0000000000000000000000000000000000000000000000000000000000000000","eip155Block":0,"eip158Block":0,"byzantiumBlock":0,"constantinopleBlock":0,"petersburgBlock":0,"istanbulBlock":0,"clique":{"period":5,"epoch":30000}},"extradata":"0x0000000000000000000000000000000000000000000000000000000000000000${account1}0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","gasLimit":"8000000","coinbase":"0x0000000000000000000000000000000000000000","difficulty":"0x1","mixHash":"0x0000000000000000000000000000000000000000000000000000000000000000","alloc":{"0000000000000000000000000000000000000000":{"balance":"0x1"},"${account1}":{"balance":"0x200000000000000000000000000000000000000000000000000000000000000"}},"nonce":"0x0000000000000123","number":"0x0","gasUsed":"0x0","parentHash":"0x0000000000000000000000000000000000000000000000000000000000000000","baseFeePerGas":null}'
 key: '${key}'
 password: "${password}"
 
@@ -955,7 +986,7 @@ affinity:
 
 config: |
   [Eth]
-  NetworkId = 65534
+  NetworkId = ${chainid}
   SyncMode = "full"
 
   [Node]
@@ -969,7 +1000,7 @@ config: |
   StaticNodes = [${enode1},${enode2},${enode3}]
   TrustedNodes = [${enode1},${enode2},${enode3}]
 
-genesis: '{"config":{"chainId":65534,"homesteadBlock":0,"eip150Block":0,"eip150Hash":"0x0000000000000000000000000000000000000000000000000000000000000000","eip155Block":0,"eip158Block":0,"byzantiumBlock":0,"constantinopleBlock":0,"petersburgBlock":0,"istanbulBlock":0,"clique":{"period":5,"epoch":30000}},"extradata":"0x0000000000000000000000000000000000000000000000000000000000000000b6e44ba48d742ae915567874ee91a4aeacded4210000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","gasLimit":"8000000","coinbase":"0x0000000000000000000000000000000000000000","difficulty":"0x1","mixHash":"0x0000000000000000000000000000000000000000000000000000000000000000","alloc":{"0000000000000000000000000000000000000000":{"balance":"0x1"},"b6e44ba48d742ae915567874ee91a4aeacded421":{"balance":"0x200000000000000000000000000000000000000000000000000000000000000"}},"nonce":"0x0000000000000123","number":"0x0","gasUsed":"0x0","parentHash":"0x0000000000000000000000000000000000000000000000000000000000000000","baseFeePerGas":null}'
+genesis: '{"config":{"chainId":${chainid},"homesteadBlock":0,"eip150Block":0,"eip150Hash":"0x0000000000000000000000000000000000000000000000000000000000000000","eip155Block":0,"eip158Block":0,"byzantiumBlock":0,"constantinopleBlock":0,"petersburgBlock":0,"istanbulBlock":0,"clique":{"period":5,"epoch":30000}},"extradata":"0x0000000000000000000000000000000000000000000000000000000000000000b6e44ba48d742ae915567874ee91a4aeacded4210000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","gasLimit":"8000000","coinbase":"0x0000000000000000000000000000000000000000","difficulty":"0x1","mixHash":"0x0000000000000000000000000000000000000000000000000000000000000000","alloc":{"0000000000000000000000000000000000000000":{"balance":"0x1"},"b6e44ba48d742ae915567874ee91a4aeacded421":{"balance":"0x200000000000000000000000000000000000000000000000000000000000000"}},"nonce":"0x0000000000000123","number":"0x0","gasUsed":"0x0","parentHash":"0x0000000000000000000000000000000000000000000000000000000000000000","baseFeePerGas":null}'
 
 #Additional Environment Variables
 env: {}
