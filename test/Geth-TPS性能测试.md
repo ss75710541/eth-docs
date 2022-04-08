@@ -80,7 +80,7 @@ git clone https://github.com/drandreaskrueger/chainhammer
 cd chainhammer
 ```
 
-编辑 hammer/clienttype.py 91-94 行内容如下
+编辑 `hammer/clienttype.py` 91-94 行内容如下
 
 ```python
     consensus = "clique"
@@ -89,14 +89,14 @@ cd chainhammer
     chainId = 65533
 ```
 
-编辑 hammer/config.py 17-18 行内容如下
+编辑 `hammer/config.py` 17-18 行内容如下
 
 ```
 RPCaddress='http://172.17.57.222:8545'
 RPCaddress2='http://172.17.57.222:8545'
 ```
 
-编辑 624 行，注释 断言 (可能是磁盘原因，目前没有深究，暂时先注释，否则会报错) 
+编辑 `reader/blocksDB_diagramming.py` 624 行，注释 断言 (可能是磁盘原因，目前没有深究，暂时先注释，否则会报错) 
 
 ```python
 624     #assert check_timestamp_format(df)

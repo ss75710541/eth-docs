@@ -1127,7 +1127,7 @@ helm upgrade --install tps-browser-node-geth helm-charts/geth -f tps-browser-nod
 查看日志
 
 ```
-kubectl logs tps-browser-node-geth-0 -n geth
+kubectl logs tps-browser-node-geth-0 -n geth --tail 100
 ```
 
 输出`Imported new chain segment` 等为正常
@@ -1347,7 +1347,7 @@ helm upgrade --install tps-node-geth helm-charts/geth -f tps-node-values.yaml -n
 查看日志
 
 ```
-kubectl logs tps-node-geth-0 -n geth
+kubectl logs tps-node-geth-0 -n geth --tail 100
 ```
 
 输出`Imported new chain segment` 等为正常
