@@ -68,6 +68,12 @@ key: '{"address":"631cb5db2476e55e5886e0a7d1cdc02701c4a581","crypto":{"cipher":"
 
 ### 安装前准备
 
+#### 安装docker
+
+略
+
+#### clone压测代码并修改代码配置
+
 ```sh
 cd ~/
 git clone https://github.com/drandreaskrueger/chainhammer
@@ -111,8 +117,8 @@ install_chapter scripts/install-initialize.sh
 
 ### 执行安装
 
-```
-./script/install.sh
+```sh
+./script/install.sh nodocker
 ```
 
 ### 执行测试
