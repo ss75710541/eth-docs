@@ -868,7 +868,7 @@ Defaulted container "geth" out of: geth, geth-init (init)
 kubectl exec  tps1-geth-0 -n geth -- geth attach /root/.ethereum/geth.ipc --exec  "clique.propose('$acc3', true)"
 kubectl exec  tps2-geth-0 -n geth -- geth attach /root/.ethereum/geth.ipc --exec  "clique.propose('$acc3', true)"
 
-kubectl exec  test1-geth-0 -n geth -- geth attach /root/.ethereum/geth.ipc --exec  'clique.getSnapshot().signers'
+kubectl exec  tps1-geth-0 -n geth -- geth attach /root/.ethereum/geth.ipc --exec  'clique.getSnapshot().signers'
 
 # 输出三个签名者为正常
 Defaulted container "geth" out of: geth, geth-init (init)
