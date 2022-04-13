@@ -16,6 +16,12 @@
 
 略
 
+### 准备influxdb
+
+发布`influxdb` 1.x， 如果不需要收集metrics 数据可以不准备
+
+略
+
 ## 下载geth helm chart 
 
 登录k8s master1 
@@ -29,7 +35,7 @@ git clone https://github.com/paradeum-team/helm-charts
 ## 生成初始账号
 
 ```shell
-for i in {1..3}
+for i in {1..4}
 do
   # linux bash 生成随机密码${i}
   < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-12} > password${i}.txt
@@ -51,6 +57,7 @@ rm -rf /data/geth
 ```yaml
 key=`cat account1.txt`
 account="`jq -r '.address' account1.txt`"
+account4="`jq -r '.address' account4.txt`"
 password=`cat password1.txt`
 chainid=65533
 cluster=tps
@@ -86,6 +93,10 @@ image:
     - --nodiscover
     - --metrics
     - --miner.gaslimit=${gasLimit}
+    - --metrics.influxdb
+    - --metrics.influxdb.endpoint=http://gethtps-influxdb.geth.svc:8086
+    - --metrics.influxdb.tags=host=tps1-singer-node
+    - --txpool.locals=0x${account4}
 
 initContainer:
   command: ["geth"]
@@ -259,13 +270,14 @@ kubectl exec tps1-geth-0 -n geth -- geth attach /root/.ethereum/geth.ipc --exec 
 ### 创建tps2-values.yaml
 
 ```yaml
-# 获取test1 geth enode
+# 获取tps1 geth enode
 tps1_geth_hostip=`kubectl get pod tps1-geth-0 -n geth -o jsonpath="{.status.hostIP}"`
 enode1=`kubectl exec tps1-geth-0 -n geth -- geth attach /root/.ethereum/geth.ipc --exec  admin.nodeInfo.enode 2>&1|grep enode|sed "s/127.0.0.1/${tps1_geth_hostip}/g"`
 key=`cat account2.txt`
 # 这里account1 是固定的，所有节点初始化信息中的预置账号都是account1
 account1="`jq -r '.address' account1.txt`"
 account="`jq -r '.address' account2.txt`"
+account4="`jq -r '.address' account4.txt`"
 password=`cat password2.txt`
 chainid=65533
 cluster=tps
@@ -301,6 +313,10 @@ image:
     - --nodiscover
     - --metrics
     - --miner.gaslimit=${gasLimit}
+    - --metrics.influxdb
+    - --metrics.influxdb.endpoint=http://gethtps-influxdb.geth.svc:8086
+    - --metrics.influxdb.tags=host=tps2-singer-node
+    - --txpool.locals=0x${account4}
 
 initContainer:
   command: ["geth"]
@@ -512,7 +528,7 @@ Defaulted container "geth" out of: geth, geth-init (init)
 ### 创建tps3-values.yaml
 
 ```yaml
-# 获取test geth enode
+# 获取tps geth enode
 tps1_geth_hostip=`kubectl get pod tps1-geth-0 -n geth -o jsonpath="{.status.hostIP}"`
 enode1=`kubectl exec  tps1-geth-0 -n geth -- geth attach /root/.ethereum/geth.ipc --exec  admin.nodeInfo.enode 2>&1|grep enode|sed "s/127.0.0.1/${tps1_geth_hostip}/g"`
 tps2_geth_hostip=`kubectl get pod tps2-geth-0 -n geth -o jsonpath="{.status.hostIP}"`
@@ -521,6 +537,7 @@ key=`cat account3.txt`
 # 这里account1 是固定的，所有节点初始化信息中的预置账号都是account1
 account1="`jq -r '.address' account1.txt`"
 account="`jq -r '.address' account3.txt`"
+account4="`jq -r '.address' account4.txt`"
 password=`cat password3.txt`
 chainid=65533
 cluster=tps
@@ -556,6 +573,10 @@ image:
     - --nodiscover
     - --metrics
     - --miner.gaslimit=${gasLimit}
+    - --metrics.influxdb
+    - --metrics.influxdb.endpoint=http://gethtps-influxdb.geth.svc:8086
+    - --metrics.influxdb.tags=host=tps3-singer-node
+    - --txpool.locals=0x${account4}
 
 initContainer:
   command: ["geth"]
@@ -854,7 +875,7 @@ null
 # 查看签名账号列表
 kubectl exec  tps1-geth-0 -n geth -- geth attach /root/.ethereum/geth.ipc --exec  'clique.getSnapshot().signers'
 
-# 输出2个账号，分别为test1-geth 和 test2-geth 的初始账号
+# 输出2个账号，分别为tps1-geth 和 tps2-geth 的初始账号
 Defaulted container "geth" out of: geth, geth-init (init)
 {
   0x0fbf567d26e9de3c30852d5158a5d1f8b980e115: {},
@@ -904,15 +925,15 @@ INFO [04-07|11:20:30.003] Commit new sealing work                  number=679 se
 
 ```shell
 acc1="0x`jq -r '.address' account1.txt`"
-acc2="0x`jq -r '.address' account2.txt`"
-kubectl exec -it tps1-geth-0 -n geth -- geth attach /root/.ethereum/geth.ipc --exec "amount = web3.toWei(0.01); eth.sendTransaction({from: '$acc1', to: '$acc2', value: amount});"
+acc4="0x`jq -r '.address' account4.txt`"
+kubectl exec -it tps1-geth-0 -n geth -- geth attach /root/.ethereum/geth.ipc --exec "amount = web3.toWei(100000000000); eth.sendTransaction({from: '$acc1', to: '$acc4', value: amount});"
 
 # 输出
-"0x0ac46c90a61d8ad8a4d41628d14dac242cd4c23871f8a9e0cf01066443c88dde"
+"0xa3e6a034ed918cf07a85cfb795986e15e8124eeef5e8ef443f07986b883d98d6"
 
-kubectl exec -it tps1-geth-0 -n geth -- geth attach /root/.ethereum/geth.ipc --exec "eth.getBalance('$acc2')"
-kubectl exec -it tps2-geth-0 -n geth -- geth attach /root/.ethereum/geth.ipc --exec "eth.getBalance('$acc2')"
-kubectl exec -it tps3-geth-0 -n geth -- geth attach /root/.ethereum/geth.ipc --exec "eth.getBalance('$acc2')"
+kubectl exec -it tps1-geth-0 -n geth -- geth attach /root/.ethereum/geth.ipc --exec "eth.getBalance('$acc4')"
+kubectl exec -it tps2-geth-0 -n geth -- geth attach /root/.ethereum/geth.ipc --exec "eth.getBalance('$acc4')"
+kubectl exec -it tps3-geth-0 -n geth -- geth attach /root/.ethereum/geth.ipc --exec "eth.getBalance('$acc4')"
 
 # 结果都输出为正常
 Defaulted container "geth" out of: geth, geth-init (init)
@@ -924,10 +945,10 @@ Defaulted container "geth" out of: geth, geth-init (init)
 ### 创建 tps-browser-node-values.yaml
 
 ```
-# 获取test geth enode
+# 获取tps geth enode
 tps1_geth_hostip=`kubectl get pod tps1-geth-0 -n geth -o jsonpath="{.status.hostIP}"`
 enode1=`kubectl exec tps1-geth-0 -n geth -- geth attach /root/.ethereum/geth.ipc --exec  admin.nodeInfo.enode 2>&1|grep enode|sed "s/127.0.0.1/${tps1_geth_hostip}/g"`
-tps2_geth_hostip=`kubectl get pod test2-geth-0 -n geth -o jsonpath="{.status.hostIP}"`
+tps2_geth_hostip=`kubectl get pod tps2-geth-0 -n geth -o jsonpath="{.status.hostIP}"`
 enode2=`kubectl exec tps2-geth-0 -n geth -- geth attach /root/.ethereum/geth.ipc --exec  admin.nodeInfo.enode 2>&1|grep enode|sed "s/127.0.0.1/${tps2_geth_hostip}/g"`
 tps3_geth_hostip=`kubectl get pod tps3-geth-0 -n geth -o jsonpath="{.status.hostIP}"`
 enode3=`kubectl exec tps3-geth-0 -n geth -- geth attach /root/.ethereum/geth.ipc --exec  admin.nodeInfo.enode 2>&1|grep enode|sed "s/127.0.0.1/${tps3_geth_hostip}/g"`
@@ -1151,14 +1172,16 @@ INFO [04-07|11:47:08.004] Imported new chain segment               blocks=1   tx
 ### 创建 tps-node-values.yaml
 
 ```yaml
-# 获取test geth enode
+# 获取tps geth enode
 tps1_geth_hostip=`kubectl get pod tps1-geth-0 -n geth -o jsonpath="{.status.hostIP}"`
 enode1=`kubectl exec tps1-geth-0 -n geth -- geth attach /root/.ethereum/geth.ipc --exec  admin.nodeInfo.enode 2>&1|grep enode|sed "s/127.0.0.1/${tps1_geth_hostip}/g"`
-tps2_geth_hostip=`kubectl get pod test2-geth-0 -n geth -o jsonpath="{.status.hostIP}"`
+tps2_geth_hostip=`kubectl get pod tps2-geth-0 -n geth -o jsonpath="{.status.hostIP}"`
 enode2=`kubectl exec tps2-geth-0 -n geth -- geth attach /root/.ethereum/geth.ipc --exec  admin.nodeInfo.enode 2>&1|grep enode|sed "s/127.0.0.1/${tps2_geth_hostip}/g"`
 tps3_geth_hostip=`kubectl get pod tps3-geth-0 -n geth -o jsonpath="{.status.hostIP}"`
 enode3=`kubectl exec tps3-geth-0 -n geth -- geth attach /root/.ethereum/geth.ipc --exec  admin.nodeInfo.enode 2>&1|grep enode|sed "s/127.0.0.1/${tps3_geth_hostip}/g"`
 
+key=`cat account4.txt`
+password=`cat password4.txt`
 # 这里account1 是固定的，所有节点初始化信息中的预置账号都是account1
 account1="`jq -r '.address' account1.txt`"
 chainid=65533
@@ -1191,9 +1214,12 @@ image:
     - --gcmode=archive
     - --nodiscover
     - --metrics
-    - --metrics.addr=0.0.0.0
     - --http.vhosts=*
     - --http.corsdomain=*
+    - --nodiscover
+    - --metrics.influxdb
+    - --metrics.influxdb.endpoint=http://gethtps-influxdb.geth.svc:8086
+    - --metrics.influxdb.tags=host=tps-node
 
 initContainer:
   command: ["geth"]
@@ -1322,7 +1348,7 @@ config: |
 
   [Node]
   HTTPHost = "0.0.0.0"
-  HTTPModules = ["eth", "net", "web3", "txpool"]
+  HTTPModules = ["eth", "net", "web3", "personal", "txpool"]
 
   [Metrics]
   HTTP = "0.0.0.0"
@@ -1332,6 +1358,8 @@ config: |
   TrustedNodes = [${enode1},${enode2},${enode3}]
 
 genesis: '{"config":{"chainId":${chainid},"homesteadBlock":0,"eip150Block":0,"eip150Hash":"0x0000000000000000000000000000000000000000000000000000000000000000","eip155Block":0,"eip158Block":0,"byzantiumBlock":0,"constantinopleBlock":0,"petersburgBlock":0,"istanbulBlock":0,"clique":{"period":${period},"epoch":30000}},"extradata":"0x0000000000000000000000000000000000000000000000000000000000000000${account1}0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","gasLimit":"${gasLimit}","coinbase":"0x0000000000000000000000000000000000000000","difficulty":"0x1","mixHash":"0x0000000000000000000000000000000000000000000000000000000000000000","alloc":{"0000000000000000000000000000000000000000":{"balance":"0x1"},"${account1}":{"balance":"0x200000000000000000000000000000000000000000000000000000000000000"}},"nonce":"0x0000000000000123","number":"0x0","gasUsed":"0x0","parentHash":"0x0000000000000000000000000000000000000000000000000000000000000000","baseFeePerGas":null}'
+key: '${key}'
+password: "${password}"
 
 #Additional Environment Variables
 env: {}

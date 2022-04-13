@@ -20,7 +20,7 @@
     - --allow-insecure-unlock
     - --rpc.allow-unprotected-txs
     - --gcmode=archive
-    - --unlock
+    - --unlock # 必须，否则压测时账号会判定为远程账号并发交易数量限制默认为16
     - 631cb5db2476e55e5886e0a7d1cdc02701c4a581
     - --password
     - /root/.ethereum/password
@@ -102,7 +102,7 @@ RPCaddress2='http://172.17.57.222:8545'
 624     #assert check_timestamp_format(df)
 ```
 
-编辑 script/install.sh , 注释 安装 go、 geth 、initialize 内容
+编辑 `scripts/install.sh` , 注释 安装 go、 geth 、initialize 内容
 
 ```
 # go
@@ -112,13 +112,13 @@ RPCaddress2='http://172.17.57.222:8545'
 #install_chapter scripts/install-geth.sh
 
 # deploy.py andtests on testRPC
-install_chapter scripts/install-initialize.sh
+#install_chapter scripts/install-initialize.sh
 ```
 
 ### 执行安装
 
 ```sh
-./script/install.sh nodocker
+./scripts/install.sh nodocker
 ```
 
 ### 执行测试
@@ -187,3 +187,5 @@ https://github.com/drandreaskrueger/chainhammer/blob/master/results/geth.md
 https://github.com/drandreaskrueger/chainhammer/blob/master/docs/FAQ.md
 
 https://blog.amis.com/geth-not-broadcasting-transactions-1a881c50dafc
+
+https://segmentfault.com/a/1190000017333194
