@@ -80,10 +80,6 @@ image:
   args:
     - --config
     - /root/config/config.custom.toml
-    - --http
-    - --ws
-    - --allow-insecure-unlock
-    - --rpc.allow-unprotected-txs
     - --gcmode=archive
     - --unlock
     - ${account}
@@ -217,11 +213,7 @@ config: |
   [Eth]
   NetworkId = ${chainid}
   SyncMode = "full"
-
-  [Node]
-  HTTPHost = "0.0.0.0"
-  HTTPModules = ["eth", "net", "web3", "txpool"]
-
+  
   [Metrics]
   HTTP = "0.0.0.0"
 
@@ -300,10 +292,6 @@ image:
   args:
     - --config
     - /root/config/config.custom.toml
-    - --http
-    - --ws
-    - --allow-insecure-unlock
-    - --rpc.allow-unprotected-txs
     - --gcmode=archive
     - --unlock
     - ${account}
@@ -439,10 +427,6 @@ config: |
   NetworkId = ${chainid}
   SyncMode = "full"
 
-  [Node]
-  HTTPHost = "0.0.0.0"
-  HTTPModules = ["eth", "net", "web3", "txpool"]
-
   [Metrics]
   HTTP = "0.0.0.0"
 
@@ -560,10 +544,6 @@ image:
   args:
     - --config
     - /root/config/config.custom.toml
-    - --http
-    - --ws
-    - --allow-insecure-unlock
-    - --rpc.allow-unprotected-txs
     - --gcmode=archive
     - --unlock
     - ${account}
@@ -698,11 +678,7 @@ config: |
   [Eth]
   NetworkId = ${chainid}
   SyncMode = "full"
-
-  [Node]
-  HTTPHost = "0.0.0.0"
-  HTTPModules = ["eth", "net", "web3", "txpool"]
-
+  
   [Metrics]
   HTTP = "0.0.0.0"
 
@@ -932,7 +908,9 @@ kubectl exec -it tps1-geth-0 -n geth -- geth attach /root/.ethereum/geth.ipc --e
 "0xa3e6a034ed918cf07a85cfb795986e15e8124eeef5e8ef443f07986b883d98d6"
 
 kubectl exec -it tps1-geth-0 -n geth -- geth attach /root/.ethereum/geth.ipc --exec "eth.getBalance('$acc4')"
+
 kubectl exec -it tps2-geth-0 -n geth -- geth attach /root/.ethereum/geth.ipc --exec "eth.getBalance('$acc4')"
+
 kubectl exec -it tps3-geth-0 -n geth -- geth attach /root/.ethereum/geth.ipc --exec "eth.getBalance('$acc4')"
 
 # 结果都输出为正常
@@ -980,8 +958,6 @@ image:
     - --ws
     - --ws.addr=0.0.0.0
     - --ws.origins=*
-    - --allow-insecure-unlock
-    - --rpc.allow-unprotected-txs
     - --gcmode=archive
     - --nodiscover
     - --metrics
@@ -1209,8 +1185,7 @@ image:
     - --ws
     - --ws.addr=0.0.0.0
     - --ws.origins=*
-    - --allow-insecure-unlock
-    - --rpc.allow-unprotected-txs
+    - --allow-insecure-unlock # 压测使用，正常情况下不开启
     - --gcmode=archive
     - --nodiscover
     - --metrics
@@ -1386,3 +1361,8 @@ INFO [04-07|11:50:13.127] Imported new chain segment               blocks=7 txs=
 INFO [04-07|11:50:14.003] Imported new chain segment               blocks=1 txs=0 mgas=0.000 elapsed="257.308µs" mgasps=0.000 number=1570 hash=69b422..5c59c1 dirty=0.00B
 ```
 
+## 参考
+
+https://liujinye.gitbook.io/eth-docs/deploy/centos8-shi-yong-docker-da-jian-yi-tai-fang-geth-clique-poa-duo-ji-si-you-wang-luo-si-lian
+
+https://clydedcruz.medium.com/geths-insecure-unlock-c28b79dce923
