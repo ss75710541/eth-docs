@@ -31,7 +31,7 @@ tar czvf node-728218.tar.gz node-728218
 
 ### 正常启动 node 
 
-
+等初始化数据完成，pod runing, 此时只是没有数据
 
 ### 修改 node 初始化命令
 
