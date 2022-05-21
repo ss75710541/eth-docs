@@ -22,20 +22,10 @@ tar czvf node-728218.tar.gz node-728218
 
 ## 导入
 
-### 先设置geth config 静态 nodes 为空
-
-```
-  [Node.P2P]
-  StaticNodes = []
-```
-
-### 正常启动 node 
-
-等初始化数据完成，pod runing, 此时只是没有数据
-
 ### 修改 node 初始化命令
 
 ```sh
+# 手动修改 sts 中初始化命令
 kubectl edit sts uat-export-test-node-geth -n geth
 ```
 
@@ -57,7 +47,12 @@ kubectl edit sts uat-export-test-node-geth -n geth
 
 ```sh
 kubectl exec -it uat-export-test-node-geth -n geth -c geth-init
-geth import node-728218
+# 可选，需要的话清理旧数据目录
+rm -rf /root/.ethereum/geth 
+# 执行初始化创建信息
+geth init /root/config/genesis.custom.json
+# 导入备份文件
+geth import --gcmode="archive" --syncmode="full" node-728218
 ```
 
 最终出现类似下面内容
@@ -107,17 +102,13 @@ Compactions
 Read(MB):787.80635 Write(MB):1691.65939
 ```
 
-### 修改新 geth 节点静态 node 配置
-
-```yaml
-  [Node.P2P]
-  StaticNodes = ["enode://d39248f3c5e6b1b4a804b428fd89ab941f7bfb2351828cd38da1c84d8e1a449dd489d493a8e6cbf95a9c9a5cd688bf019024afab8836262cb7815e9f334a656d@x.x.x.x:30303?discport=0","enode://ab367d339ae1b8c7ecfec1bfed951bb0f90589d829694e133f33604f72257c6ac28e36f61145d78e12ae8841a3b91d69693d0daf51b126735ce1ed32543e8f19@x.x.x.x:30303?discport=0","enode://1a6a003ec8abc962093e98e27749340c4fe80685842fd3e38d578ab9230c58e786cc4b532c5fc823faa4e8122c33a37f8dd9fb1596d823e56b88734cff0d1ca4@x.x.x.x:30303?discport=0"]
-```
-
 ### 更新 geth node
 
+恢复 geth node 初始化命令
+
 ```
-sh install-uat-export-test-node-geth.sh
+# 使用 helm 更新恢复为正常初始化命令
+helm upgrade --install uat-export-test-node-geth geth-0.2.3.tgz -f uat-export-test-node-values.yaml -n geth
 ```
 
  删除 sleep 的 geth node(因为init 容器 sleep 了，等自动替换 pod 需要很久)
